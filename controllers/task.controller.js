@@ -6,21 +6,22 @@ const createTask = asyncHandler(async (req, res) => {
 
   if (!title || !description || !dueDate || !priority) {
     res.status(400).json({ err: "All fields are mandatory" });
+  } else {
+    const task = await Tasks.create({
+      user_id: req.user.id,
+      title,
+      description,
+      dueDate,
+      priority,
+    });
+    res.status(200).json(task);
   }
-  const task = await Tasks.create({
-    user_id: req.user.id,
-    title,
-    description,
-    dueDate,
-    priority,
-  });
-  res.status(200).json(task);
 });
 
 const getAllTasks = asyncHandler(async (req, res) => {
   const { isDeleted = "false" } = req.query;
-  // const allTasks = await Tasks.find({ user_id: req.user.id, isDeleted });
-  const allTasks = await Tasks.find({ isDeleted });
+  const allTasks = await Tasks.find({ user_id: req.user.id, isDeleted });
+  // const allTasks = await Tasks.find({ isDeleted });
   res.status(200).json(allTasks);
 });
 
@@ -46,36 +47,44 @@ const getTask = asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "Task not found" });
   }
 
-  // if (String(task.user_id) !== String(req.user.id)) {
-  //   return res
-  //     .status(403)
-  //     .json({ error: "Forbidden: You don't own this task" });
-  // }
+  if (String(task.user_id) !== String(req.user.id)) {
+    return res
+      .status(403)
+      .json({ error: "Forbidden: You don't own this task" });
+  }
 
   res.status(200).json(task);
 });
 
 const deleteTask = asyncHandler(async (req, res) => {
   const task = await Tasks.findById(req.params.id);
-  // if (String(task.user_id) === req.user.id) {
-  task.isDeleted = "true";
-  res.status(200).json(task);
-  await task.save();
-  // } else {
-  //   res.status(401).json({ err: "Unauthorized" });
-  // }
+  if (String(task.user_id) === req.user.id) {
+    task.isDeleted = "true";
+    res.status(200).json(task);
+    await task.save();
+  } else {
+    res.status(401).json({ err: "Unauthorized" });
+  }
 });
 
 const updateTask = asyncHandler(async (req, res) => {
-  const task = await Tasks.findById(req.params.id);
-  // if (String(task.user_id) === req.user.id) {
-  const updateTask = await Tasks.findByIdAndUpdate(task, req.body, {
-    new: true,
-  });
-  res.status(200).json(updateTask);
-  // } else {
-  //   res.status(401).json({ err: "Unauthorized" });
-  // }
+  try {
+    const task = await Tasks.findById(req.params.id);
+    // if (!title || !description || !dueDate || !priority ) {
+    //   res.status(400).json({ err: "All fields are mandatory" });
+    // }
+
+    if (String(task.user_id) === req.user.id) {
+      const updateTask = await Tasks.findByIdAndUpdate(task, req.body, {
+        new: true,
+      });
+      res.status(200).json(updateTask);
+    } else {
+      res.status(401).json({ err: "Unauthorized" });
+    }
+  } catch (error) {
+    res.status(400).json({ err: error });
+  }
 });
 
 const completeTask = asyncHandler(async (req, res) => {
@@ -129,7 +138,7 @@ const searchTasks = asyncHandler(async (req, res) => {
 const sortTasks = asyncHandler(async (req, res) => {
   const { order, priority, isDeleted = "false" } = req.query;
 
-  const query = { isDeleted: isDeleted };
+  const query = { isDeleted: isDeleted, user_id: req.user.id };
 
   if (priority) {
     query.priority = priority;
@@ -153,17 +162,62 @@ const sortTasks = asyncHandler(async (req, res) => {
   res.status(200).json(tasks);
 });
 
+// const pagination = asyncHandler(async (req, res) => {
+//   let { page, limit, isDeleted = "false" } = req.query;
+
+//   let allTasks = await Tasks.find({
+//     user_id: req.user.id,
+//     isDeleted,
+//   })
+//     .limit(limit)
+//     .skip((page - 1) * limit);
+
+//   const tasksLength = await Tasks.countDocuments();
+
+//   if (!allTasks) {
+//     res.status(401).json("No tasks Found");
+//   }
+//   res.status(200).json({
+//     allTasks,
+//     totalPages: Math.ceil(tasksLength / limit),
+//     currentPage: parseInt(page),
+//   });
+// });
 const pagination = asyncHandler(async (req, res) => {
-  let { page, limit, isDeleted = "false" } = req.query;
-  let allTasks = await Tasks.find({ isDeleted: isDeleted })
-    .limit(limit)
-    .skip((page - 1) * limit);
-  const tasksLength = await Tasks.countDocuments();
-  res.status(200).json({
-    allTasks,
-    totalPages: Math.ceil(tasksLength / limit),
-    currentPage: parseInt(page),
-  });
+  let { page = 1, limit = 10, isDeleted = "false" } = req.query;
+
+  page = Math.max(1, parseInt(page));
+  limit = Math.max(1, parseInt(limit));
+
+  const isDeletedBool = isDeleted === "true";
+
+  try {
+    const allTasks = await Tasks.find({
+      user_id: req.user.id,
+      isDeleted: isDeletedBool,
+    })
+      .limit(limit)
+      .skip((page - 1) * limit);
+
+    const tasksLength = await Tasks.countDocuments({
+      user_id: req.user.id,
+      isDeleted: isDeletedBool,
+    });
+
+    if (allTasks.length === 0) {
+      return res.status(404).json("No tasks found.");
+    }
+
+    // Send paginated response
+    res.status(200).json({
+      allTasks,
+      totalPages: Math.ceil(tasksLength / limit),
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // const priorityFilter = asyncHandler(async (req, res) => {

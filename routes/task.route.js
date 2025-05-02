@@ -17,12 +17,15 @@ const taskRoutes = express.Router();
 
 taskRoutes.get("/status", filterTaskStatus);
 taskRoutes.get("/search", searchTasks);
+
+
+taskRoutes.use(validWebToken);
+
 taskRoutes.get("/sort", sortTasks);
+
 taskRoutes.get("/pagination", pagination);
 
 taskRoutes.get("", getAllTasks);
-
-// taskRoutes.use(validWebToken);
 
 taskRoutes.post("/create", createTask);
 taskRoutes.get("/:id", getTask);

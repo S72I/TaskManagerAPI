@@ -7,7 +7,7 @@ const register = asyncHandler(async (req, res) => {
   console.log(req.body);
 
   const { name, email, password } = req.body;
-  if ((!name, !email, !password)) {
+  if (!name || !email || !password) {
     res.status(400);
     res.json({ err: "All fields are mandatory" });
   }
@@ -28,7 +28,7 @@ const register = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  if ((!email, !password)) {
+  if (!email && !password) {
     res.status(400).json({ err: "All fields are mandatory" });
   }
 
@@ -43,8 +43,9 @@ const login = asyncHandler(async (req, res) => {
           },
         },
         process.env.ACCESS_TOKEN_SECERT,
-        { expiresIn: "1h" }
+        { expiresIn: 1 * 60 }
       );
+
       res.status(200).json(accessToken);
     } else {
       res.status(401).json({ err: "Email or Password invalid try again" });
