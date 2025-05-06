@@ -26,7 +26,7 @@ services:
         value: 5000
       - key: mongoURI
         fromDatabase:
-          name: taskmanagerdb     
+          name: TaskManagerAPI     
           property: connectionString
       - key: ACCESS_TOKEN_SECERT
         value: S23R24M25
