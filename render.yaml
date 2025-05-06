@@ -1,14 +1,32 @@
+# services:
+#   - type: web
+#     name: task-manager-api
+#     env: node
+#     plan: free
+#     buildCommand: npm install
+#     startCommand: npm start
+#     envVars:
+#       - key: PORT
+#         value: 5000
+#       - key: mongoURI
+#         value: mongodb://127.0.0.1:27017/TaskManagerAPI
+#       - key: ACCESS_TOKEN_SECERT
+#         value: S23R24M25
+
+
 services:
   - type: web
     name: task-manager-api
     env: node
     plan: free
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node server.js
     envVars:
       - key: PORT
         value: 5000
       - key: mongoURI
-        value: mongodb://127.0.0.1:27017/TaskManagerAPI
+        fromDatabase:
+          name: taskmanagerdb     
+          property: connectionString
       - key: ACCESS_TOKEN_SECERT
         value: S23R24M25
