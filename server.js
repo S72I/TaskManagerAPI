@@ -36,7 +36,7 @@ DBConnection();
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://your-vercel-project.vercel.app"  // replace this with actual URL
+  "https://task-management-omega-pied.vercel.app"  // replace this with actual URL
 ];
 
 const corsOptions = {
