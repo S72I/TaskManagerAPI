@@ -14,14 +14,23 @@ const register = asyncHandler(async (req, res) => {
 
   const userAvail = await Users.findOne({ email });
   if (userAvail) {
-    res.status(400).json({ err: "Email already Exist use another email" });
+   return res.status(400).json({ err: "Email already Exist use another email" });
   }
   const hashPassword = await bcrypt.hash(password, 10);
 
   const user = await Users.create({ name, email, password: hashPassword });
   if (user) {
-    res.status(200);
-    res.json({ user });
+    const accessToken = jwt.sign(
+      {
+        user: {
+          name: user.name,
+          id: user.id,
+        },
+      },
+      process.env.ACCESS_TOKEN_SECERT,
+      { expiresIn: "24h" }
+    );
+    res.status(200).json(accessToken);
   }
 });
 
@@ -43,7 +52,7 @@ const login = asyncHandler(async (req, res) => {
           },
         },
         process.env.ACCESS_TOKEN_SECERT,
-        { expiresIn: 1 * 60 }
+        { expiresIn: "24h" }
       );
 
       res.status(200).json(accessToken);

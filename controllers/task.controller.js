@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Tasks = require("../models/task.model");
+const jwt = require("jsonwebtoken");
 
 const createTask = asyncHandler(async (req, res) => {
   const { title, description, dueDate, priority } = req.body;
@@ -118,20 +119,74 @@ const filterTaskStatus = asyncHandler(async (req, res) => {
   res.status(200).json(filteredTasks);
 });
 
+// const searchTasks = asyncHandler(async (req, res) => {
+//   const { title, description } = req.query;
+
+//   const query = { user_id: req.user.id };
+
+//   const regexPattern = new RegExp(`${title}`);
+
+//   if (title) query.title = { $regex: regexPattern };
+//   if (description) query.description = { $regex: description };
+
+//   const tasks = await Tasks.find(query);
+
+//   if (!tasks.length) {
+//     res.status(404).json({ err: "No tasks found matching your criteria" });
+//   }
+//   res.status(200).json(tasks);
+// });
+
+// const searchTasks = asyncHandler(async (req, res) => {
+//   const { title, description } = req.query;
+
+//   const query = { user_id: req.user.id };
+
+//   if (title) {
+//     query.title = { $regex: new RegExp(title, "i") };
+//   }
+
+//   if (description) {
+//     query.description = { $regex: new RegExp(description, "i") };
+//   }
+
+//   const tasks = await Tasks.find(query);
+
+//   if (!tasks.length) {
+//     return res
+//       .status(404)
+//       .json({ err: "No tasks found matching your criteria" });
+//   }
+
+//   res.status(200).json(tasks);
+// });
+
 const searchTasks = asyncHandler(async (req, res) => {
   const { title, description } = req.query;
+  const query = { user_id: req.user.id };
+  const orConditions = [];
 
-  const query = {};
-  const regexPattern = new RegExp(`${title}`);
+  if (title) {
+    orConditions.push({ title: { $regex: new RegExp(title, "i") } });
+  }
+  if (description) {
+    orConditions.push({
+      description: { $regex: new RegExp(description, "i") },
+    });
+  }
 
-  if (title) query.title = { $regex: regexPattern };
-  if (description) query.description = { $regex: description };
+  if (orConditions.length) {
+    query.$or = orConditions;
+  }
 
   const tasks = await Tasks.find(query);
 
   if (!tasks.length) {
-    res.status(404).json({ err: "No tasks found matching your criteria" });
+    return res
+      .status(404)
+      .json({ err: "No tasks found matching your criteria" });
   }
+
   res.status(200).json(tasks);
 });
 

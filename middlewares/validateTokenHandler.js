@@ -7,12 +7,15 @@ const validWebToken = asyncHandler(async (req, res, next) => {
 
   if (authHeader && authHeader.startsWith("Bearer")) {
     token = authHeader.split(" ")[1];
+   
+
     jwt.verify(token, process.env.ACCESS_TOKEN_SECERT, (err, decode) => {
       if (err) {
         res.status(401);
         res.json({ err: "user is not Authorized" });
       }
       req.user = decode.user;
+      
       next();
     });
     if (!token) {

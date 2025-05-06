@@ -16,10 +16,10 @@ const {
 const taskRoutes = express.Router();
 
 taskRoutes.get("/status", filterTaskStatus);
-taskRoutes.get("/search", searchTasks);
-
 
 taskRoutes.use(validWebToken);
+
+taskRoutes.get("/search", searchTasks);
 
 taskRoutes.get("/sort", sortTasks);
 
