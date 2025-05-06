@@ -16,4 +16,8 @@ app.use(cors());
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
 
+app.get("/", (req, res) => {
+  res.send("Working on Rendeer");
+});
+
 app.listen(PORT, () => console.log(`server running on PORT: ${PORT}`));
