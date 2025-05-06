@@ -22,7 +22,6 @@
 
 // app.listen(PORT, () => console.log(`server running on PORT: ${PORT}`));
 
-
 require("dotenv").config();
 const express = require("express");
 const DBConnection = require("./config/DBconfig.js");
@@ -37,13 +36,18 @@ DBConnection();
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://your-vercel-project.vercel.app" 
+  "https://your-vercel-project.vercel.app"  // replace this with actual URL
 ];
 
-app.use(cors({
+const corsOptions = {
   origin: allowedOrigins,
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
+
+// 🔧 Fix preflight issue
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 
@@ -55,4 +59,3 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`server running on PORT: ${PORT}`));
-
