@@ -1,5 +1,41 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Node.js
+node_modules/
+npm-debug.log*
 
-# dependencies
-/node_modules
-/vscode
+# Logs
+logs
+*.log
+*.log.*
+*.pid
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Environment variables
+.env
+.env.*
+
+# Build output
+dist
+build
+
+# IDEs and editors
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Temporary files
+tmp
+temp
+
+# MacOS
+.DS_Store
